@@ -1,0 +1,70 @@
+#pragma once
+
+#include <cstdint>
+#include <fstream>
+#include <random>
+
+
+#define FONTSET_SIZE 80
+
+#define X	(opCode & 0x0F00u)
+#define Y	(opCode & 0x00F0u)
+#define N	(opCode & 0x000Fu)
+#define NN	(opCode & 0x00FFu)
+#define NNN (opCode & 0x0FFFu)
+
+class CPU {
+public:
+	const unsigned int START_ADDRESS = 0x200;
+	const unsigned int FONTSET_START_ADDRESS = 0x50;
+	
+	const uint8_t fontset[FONTSET_SIZE] =
+	{
+		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+		0x20, 0x60, 0x20, 0x20, 0x70, // 1
+		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+		0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+		0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+		0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+		0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+		0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+		0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+		0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+		0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+		0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+		0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+	};
+
+	uint8_t memory[4096];
+	bool display[64 * 32];
+	uint8_t registers[16];
+	uint16_t stack[16];
+
+	uint16_t IR; // Index register
+	uint16_t PC; // Program counter
+
+	uint8_t delay_timer;
+	uint8_t sound_timer;
+
+	uint16_t opCode;
+	uint8_t SP; // Stack pointer
+
+	CPU();
+	void LoadRom(char const* filename);
+
+	// Instructions
+	void INST_00E0();	// CLS
+	void INST_00EE();	// Returns from a subroutine. 
+	void INST_1NNN();	// Jump
+	void INST_2NNN();	// Call
+	void INST_3XNN();	// Skips the next instruction if VX equals NN (usually the next instruction is a jump to skip a code block). 
+
+
+	void INST_6XNN();	// Set Register vx
+	void INST_7XNN();	// Add value to register vx
+	void INST_ANNN();	// Set index register I
+	void INST_DXYN();	// Draw
+};
